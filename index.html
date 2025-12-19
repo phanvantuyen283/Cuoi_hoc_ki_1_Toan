@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm Tra Học Kỳ I - Toán Lớp 4</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #fdfcf0;
+            color: #1e293b;
+        }
+
+        .custom-card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 2px solid #e2e8f0;
+        }
+
+        .question-box {
+            border-left: 6px solid #3b82f6;
+            background-color: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            border: 2px solid #f1f5f9;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .option-item:hover {
+            border-color: #93c5fd;
+            background-color: #eff6ff;
+        }
+
+        input[type="radio"]:checked + span {
+            color: #2563eb;
+            font-weight: 700;
+        }
+
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .bg-pattern {
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-pattern pb-20">
+
+    <!-- Thanh trạng thái và thời gian -->
+    <div class="sticky-top bg-white border-b-4 border-blue-500 shadow-md p-4">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="text-center md:text-left">
+                <h1 class="text-xl font-extrabold text-blue-600 uppercase">Toán Lớp 4 - Học Kỳ I</h1>
+                <p class="text-sm text-gray-500 font-bold">⏱ Thời gian làm bài: 40 phút</p>
+            </div>
+            
+            <div id="timer" class="flex items-center gap-3 bg-red-100 text-red-600 px-6 py-2 rounded-full border-2 border-red-300 font-black text-2xl shadow-inner">
+                <span id="timeDisplay">40:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4 mt-8">
+        <!-- Thông tin học sinh -->
+        <div class="custom-card p-6 mb-8 border-t-8 border-t-blue-500">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-blue-700">
+                👤 THÔNG TIN HỌC SINH
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500">HỌ VÀ TÊN</label>
+                    <input type="text" id="studentName" placeholder="Nhập tên của em..." class="w-full border-2 border-gray-100 rounded-xl p-3 focus:border-blue-500 outline-none transition">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-gray-500">LỚP</label>
+                    <input type="text" id="studentClass" placeholder="VD: 4A, 4B..." class="w-full border-2 border-gray-100 rounded-xl p-3 focus:border-blue-500 outline-none transition">
+                </div>
+            </div>
+        </div>
+
+        <form id="quizForm">
+            <!-- PHẦN I: TRẮC NGHIỆM -->
+            <div class="mb-12">
+                <div class="bg-blue-600 text-white inline-block px-6 py-2 rounded-t-2xl font-black shadow-lg">
+                    PHẦN I: TRẮC NGHIỆM (3 điểm)
+                </div>
+                <div class="custom-card p-6 border-blue-100">
+                    
+                    <!-- Câu 1 -->
+                    <div class="question-box">
+                        <p class="font-bold text-lg mb-2">Câu 1. Giá trị của chữ số 8 trong số 28 471 539 là:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <label class="option-item"><input type="radio" name="q1" value="A"> <span>A. 80 000</span></label>
+                            <label class="option-item"><input type="radio" name="q1" value="B"> <span>B. 8 000 000</span></label>
+                            <label class="option-item"><input type="radio" name="q1" value="C"> <span>C. 80 000 000</span></label>
+                            <label class="option-item"><input type="radio" name="q1" value="D"> <span>D. 800 000</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Câu 2 -->
+                    <div class="question-box">
+                        <p class="font-bold text-lg mb-2">Câu 2. Tổng của hai số là 100, số lớn hơn số bé 20 đơn vị. Số lớn là:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <label class="option-item"><input type="radio" name="q2" value="A"> <span>A. 40</span></label>
+                            <label class="option-item"><input type="radio" name="q2" value="B"> <span>B. 60</span></label>
+                            <label class="option-item"><input type="radio" name="q2" value="C"> <span>C. 120</span></label>
+                            <label class="option-item"><input type="radio" name="q2" value="D"> <span>D. 80</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Câu 3 -->
+                    <div class="question-box">
+                        <p class="font-bold text-lg mb-2">Câu 3. 48 tháng = …… năm. Số cần điền vào chỗ chấm là:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <label class="option-item"><input type="radio" name="q3" value="A"> <span>A. 1</span></label>
+                            <label class="option-item"><input type="radio" name="q3" value="B"> <span>B. 2</span></label>
+                            <label class="option-item"><input type="radio" name="q3" value="C"> <span>C. 3</span></label>
+                            <label class="option-item"><input type="radio" name="q3" value="D"> <span>D. 4</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Câu 4 -->
+                    <div class="question-box">
+                        <p class="font-bold text-lg mb-2">Câu 4. Năm 1903, người ta công bố phát minh ra máy bay. Máy bay được phát minh vào thế kỉ nào?</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <label class="option-item"><input type="radio" name="q4" value="A"> <span>A. XIX</span></label>
+                            <label class="option-item"><input type="radio" name="q4" value="B"> <span>B. IXX</span></label>
+                            <label class="option-item"><input type="radio" name="q4" value="C"> <span>C. XX</span></label>
+                            <label class="option-item"><input type="radio" name="q4" value="D"> <span>D. XXI</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Câu 5 -->
+                    <div class="question-box">
+                        <p class="font-bold text-lg mb-4">Câu 5. Trong các hình dưới đây, hình nào chứa góc nhọn?</p>
+                        <div class="flex flex-wrap gap-4">
+                            <label class="flex flex-col items-center p-4 border rounded-xl hover:bg-white cursor-pointer transition">
+                                <svg width="80" height="80" viewBox="0 0 100 100">
+                                    <path d="M20 80 L80 80 M20 80 L20 20" stroke="#334155" stroke-width="3" fill="none"/>
+                                </svg>
+                                <div class="mt-2 flex items-center gap-2"><input type="radio" name="q5" value="A"> <span>Góc vuông</span></div>
+                            </label>
+                            <label class="flex flex-col items-center p-4 border rounded-xl hover:bg-white cursor-pointer transition">
+                                <svg width="80" height="80" viewBox="0 0 100 100">
+                                    <path d="M20 80 L80 80 M20 80 L60 30" stroke="#334155" stroke-width="3" fill="none"/>
+                                </svg>
+                                <div class="mt-2 flex items-center gap-2"><input type="radio" name="q5" value="B"> <span>Góc nhọn</span></div>
+                            </label>
+                            <label class="flex flex-col items-center p-4 border rounded-xl hover:bg-white cursor-pointer transition">
+                                <svg width="80" height="80" viewBox="0 0 100 100">
+                                    <path d="M20 80 L80 80 M20 80 L10 20" stroke="#334155" stroke-width="3" fill="none"/>
+                                </svg>
+                                <div class="mt-2 flex items-center gap-2"><input type="radio" name="q5" value="C"> <span>Góc tù</span></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Câu 6 -->
+                    <div class="question-box">
+                        <p class="font-bold text-lg mb-2">Câu 6. Trung bình cộng của số lớn nhất có 3 chữ số và số lớn nhất có 4 chữ là:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <label class="option-item"><input type="radio" name="q6" value="A"> <span>A. 5499</span></label>
+                            <label class="option-item"><input type="radio" name="q6" value="B"> <span>B. 5473</span></label>
+                            <label class="option-item"><input type="radio" name="q6" value="C"> <span>C. 5432</span></label>
+                            <label class="option-item"><input type="radio" name="q6" value="D"> <span>D. 5437</span></label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PHẦN II: TỰ LUẬN -->
+            <div class="mb-12">
+                <div class="bg-emerald-600 text-white inline-block px-6 py-2 rounded-t-2xl font-black shadow-lg">
+                    PHẦN II: TỰ LUẬN (7 điểm)
+                </div>
+                <div class="custom-card p-6 border-emerald-100">
+                    
+                    <!-- Câu 7 -->
+                    <div class="question-box" style="border-left-color: #10b981;">
+                        <p class="font-bold text-lg mb-4 text-emerald-700">Câu 7 (2 điểm). Đặt tính rồi tính:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white p-3 border rounded-lg">
+                                <p class="text-sm font-bold mb-2">215 674 + 87 028</p>
+                                <input type="number" name="q7_1" placeholder="Kết quả..." class="w-full p-2 border-b-2 border-emerald-200 outline-none">
+                            </div>
+                            <div class="bg-white p-3 border rounded-lg">
+                                <p class="text-sm font-bold mb-2">8 703 - 6 574</p>
+                                <input type="number" name="q7_2" placeholder="Kết quả..." class="w-full p-2 border-b-2 border-emerald-200 outline-none">
+                            </div>
+                            <div class="bg-white p-3 border rounded-lg">
+                                <p class="text-sm font-bold mb-2">241 x 37</p>
+                                <input type="number" name="q7_3" placeholder="Kết quả..." class="w-full p-2 border-b-2 border-emerald-200 outline-none">
+                            </div>
+                            <div class="bg-white p-3 border rounded-lg">
+                                <p class="text-sm font-bold mb-2">2 142 : 21</p>
+                                <input type="number" name="q7_4" placeholder="Kết quả..." class="w-full p-2 border-b-2 border-emerald-200 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Câu 8 -->
+                    <div class="question-box" style="border-left-color: #10b981;">
+                        <p class="font-bold text-lg mb-4 text-emerald-700">Câu 8 (1,5 điểm). Tính giá trị biểu thức:</p>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="font-medium mb-1 italic">a) 1 245 + 2 556 : 3</p>
+                                <input type="text" name="q8_1" placeholder="Nhập kết quả cuối cùng..." class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-200">
+                            </div>
+                            <div>
+                                <p class="font-medium mb-1 italic">b) 206 180 – 231 x 14</p>
+                                <input type="text" name="q8_2" placeholder="Nhập kết quả cuối cùng..." class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-emerald-200">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Câu 9 -->
+                    <div class="question-box" style="border-left-color: #10b981;">
+                        <p class="font-bold text-lg mb-2 text-emerald-700">Câu 9 (2,5 điểm). Bài toán:</p>
+                        <p class="mb-4 text-gray-700">Một đám đất hình chữ nhật có nửa chu vi 180m, chiều rộng kém chiều dài 24m. Tính diện tích đám đất.</p>
+                        <textarea name="q9" rows="6" placeholder="Viết bài giải của em tại đây..." class="w-full p-4 border-2 border-emerald-50 rounded-2xl outline-none focus:border-emerald-500 transition"></textarea>
+                    </div>
+
+                    <!-- Câu 10 -->
+                    <div class="question-box" style="border-left-color: #10b981;">
+                        <p class="font-bold text-lg mb-2 text-emerald-700">Câu 10 (1 điểm). Tính thuận tiện:</p>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-sm italic">15 800 + (4 200 + 7 260) + 2 740</p>
+                                <input type="text" name="q10_1" placeholder="Kết quả..." class="w-full p-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <p class="text-sm italic">123 x 97 + 2 x 123 + 123</p>
+                                <input type="text" name="q10_2" placeholder="Kết quả..." class="w-full p-2 border rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Nút nộp bài -->
+            <div class="flex justify-center pb-12">
+                <button type="button" onclick="confirmSubmit()" class="group relative bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-16 rounded-full text-2xl shadow-xl transition-all hover:scale-105 active:scale-95 overflow-hidden">
+                    <span class="relative z-10">🚀 NỘP BÀI THI</span>
+                    <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal kết quả -->
+    <div id="resultModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
+            <div class="bg-blue-600 p-8 text-center text-white">
+                <div class="text-6xl mb-4">🏆</div>
+                <h3 class="text-3xl font-black mb-2">Kết quả bài làm</h3>
+                <p id="resStudent" class="opacity-90 font-bold"></p>
+            </div>
+            <div class="p-8">
+                <div class="bg-slate-50 rounded-2xl p-6 text-center mb-6">
+                    <p class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Điểm trắc nghiệm</p>
+                    <div class="text-6xl font-black text-blue-600" id="finalScore">0/3.0</div>
+                </div>
+                
+                <div class="space-y-3 mb-8 max-h-48 overflow-y-auto pr-2" id="scoreDetails">
+                    <!-- JS chi tiết -->
+                </div>
+
+                <div class="bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl text-amber-800 text-sm italic text-center">
+                    ⚠️ Lưu ý: Bài làm phần tự luận của em đã được ghi nhận. Thầy/Cô sẽ chấm điểm phần này sau nhé!
+                </div>
+
+                <button onclick="location.reload()" class="w-full mt-6 bg-slate-800 text-white py-4 rounded-2xl font-black text-lg hover:bg-slate-900 transition">
+                    LÀM LẠI BÀI THI
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cấu hình thời gian
+        let timeRemaining = 40 * 60; // 40 phút
+        const timeDisplay = document.getElementById('timeDisplay');
+        
+        const timer = setInterval(() => {
+            timeRemaining--;
+            let mins = Math.floor(timeRemaining / 60);
+            let secs = timeRemaining % 60;
+            timeDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+            if (timeRemaining <= 300) { // Cảnh báo còn 5 phút
+                document.getElementById('timer').classList.add('animate-pulse', 'bg-red-200');
+            }
+
+            if (timeRemaining <= 0) {
+                clearInterval(timer);
+                processResults();
+            }
+        }, 1000);
+
+        function confirmSubmit() {
+            const name = document.getElementById('studentName').value.trim();
+            if (!name) {
+                alert("Em hãy nhập Họ và Tên trước khi nộp bài nhé!");
+                document.getElementById('studentName').focus();
+                return;
+            }
+            if (confirm("Em có chắc chắn muốn nộp bài thi không? Hãy kiểm tra kỹ nhé!")) {
+                processResults();
+            }
+        }
+
+        function processResults() {
+            clearInterval(timer);
+            
+            const answers = {
+                q1: "B", // 8.000.000
+                q2: "B", // 60
+                q3: "D", // 4
+                q4: "C", // XX
+                q5: "B", // Góc nhọn
+                q6: "A"  // 5499
+            };
+
+            const form = document.getElementById('quizForm');
+            const formData = new FormData(form);
+            
+            let mcqScore = 0;
+            let detailsHTML = "";
+
+            // Chấm điểm trắc nghiệm (6 câu, mỗi câu 0.5đ)
+            for (let i = 1; i <= 6; i++) {
+                const qKey = 'q' + i;
+                const userChoice = formData.get(qKey);
+                const isCorrect = userChoice === answers[qKey];
+                
+                if (isCorrect) {
+                    mcqScore += 0.5;
+                    detailsHTML += `<div class="flex justify-between items-center text-green-600 font-bold">
+                        <span>Câu ${i}: Đúng</span>
+                        <span>+0.5đ</span>
+                    </div>`;
+                } else {
+                    detailsHTML += `<div class="flex justify-between items-center text-red-500 font-bold">
+                        <span>Câu ${i}: Sai (Đ/A: ${answers[qKey]})</span>
+                        <span>0đ</span>
+                    </div>`;
+                }
+            }
+
+            // Hiển thị Modal
+            const name = document.getElementById('studentName').value;
+            const className = document.getElementById('studentClass').value;
+            
+            document.getElementById('resStudent').textContent = `${name} - Lớp ${className}`;
+            document.getElementById('finalScore').textContent = `${mcqScore.toFixed(1)}/3.0`;
+            document.getElementById('scoreDetails').innerHTML = detailsHTML;
+            
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
+
