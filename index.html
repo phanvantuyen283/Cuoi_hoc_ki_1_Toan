@@ -1,356 +1,338 @@
-import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  onSnapshot, 
-  doc, 
-  updateDoc, 
-  serverTimestamp, 
-  query,
-  getDocs
-} from 'firebase/firestore';
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { 
-  BookOpen, 
-  GraduationCap, 
-  Search, 
-  CheckCircle2, 
-  Clock, 
-  User, 
-  MessageSquare, 
-  Save, 
-  X,
-  AlertCircle
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Thi Toán Lớp 4 - EduMath</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Lexend', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .quiz-card { background: white; border-radius: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); border: 1px solid #e2e8f0; }
+        .q-box { border-left: 6px solid #3b82f6; background-color: #f8fafc; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .option-item { display: flex; align-items: center; gap: 12px; padding: 12px; border: 2px solid #f1f5f9; border-radius: 12px; cursor: pointer; transition: all 0.2s; margin-top: 8px; }
+        .option-item:hover { border-color: #93c5fd; background-color: #eff6ff; }
+        input[type="radio"]:checked + span { color: #2563eb; font-weight: 700; }
+        .sticky-nav { position: sticky; top: 0; z-index: 50; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; }
+        .btn-tab { padding: 8px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+        .btn-tab.active { background: white; color: #2563eb; shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .btn-tab:not(.active) { color: #64748b; }
+    </style>
+</head>
+<body>
 
-// --- Cấu hình Firebase ---
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'toan-4-hk1-v2';
-
-export default function App() {
-  const [view, setView] = useState('student'); // 'student', 'admin', 'results'
-  const [user, setUser] = useState(null);
-  const [submissions, setSubmissions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  
-  // Auth & Data Sync
-  useEffect(() => {
-    const initAuth = async () => {
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        await signInWithCustomToken(auth, __initial_auth_token);
-      } else {
-        await signInAnonymously(auth);
-      }
-    };
-    initAuth();
-    const unsubscribeAuth = onAuthStateChanged(auth, setUser);
-    return () => unsubscribeAuth();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    const q = collection(db, 'artifacts', appId, 'public', 'data', 'exams');
-    const unsubscribeData = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      // Sort by time in memory
-      data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-      setSubmissions(data);
-      setLoading(false);
-    }, (error) => {
-      console.error("Firestore Error:", error);
-      setLoading(false);
-    });
-    return () => unsubscribeData();
-  }, [user]);
-
-  // UI Components
-  return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      {/* Navigation Bar */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-2 rounded-xl text-white">
-              <BookOpen size={24} />
+    <!-- Navigation -->
+    <nav class="sticky-nav p-4">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <div class="bg-blue-600 p-2 rounded-xl text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                </div>
+                <h1 class="text-xl font-extrabold text-slate-800 tracking-tight">EduMath Lớp 4</h1>
             </div>
-            <h1 className="font-extrabold text-xl text-slate-800 tracking-tight">EduMath Lớp 4</h1>
-          </div>
-          
-          <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200">
-            <TabBtn active={view === 'student'} onClick={() => setView('student')} icon={<User size={16}/>} label="Học sinh" />
-            <TabBtn active={view === 'results'} onClick={() => setView('results')} icon={<Search size={16}/>} label="Tra cứu" />
-            <TabBtn active={view === 'admin'} onClick={() => setView('admin')} icon={<GraduationCap size={16}/>} label="Giáo viên" />
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-4xl mx-auto p-4 md:p-8">
-        {view === 'student' && <StudentView user={user} />}
-        {view === 'results' && <ResultsView submissions={submissions} />}
-        {view === 'admin' && <AdminView submissions={submissions} loading={loading} />}
-      </main>
-    </div>
-  );
-}
-
-// --- Sub-components ---
-
-function TabBtn({ active, onClick, icon, label }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all ${
-        active ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-800'
-      }`}
-    >
-      {icon} {label}
-    </button>
-  );
-}
-
-// 1. GIAO DIỆN HỌC SINH
-function StudentView({ user }) {
-  const [formData, setFormData] = useState({ name: '', class: '', essay: '' });
-  const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(40 * 60);
-  const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    if (submitted) return;
-    const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    if (timeLeft <= 0) handleSubmit();
-    return () => clearInterval(timer);
-  }, [timeLeft, submitted]);
-
-  const handleSubmit = async () => {
-    if (!formData.name || !formData.class) return alert("Em hãy nhập tên và lớp nhé!");
-    if (!confirm("Em có chắc chắn muốn nộp bài thi không?")) return;
-
-    // Chấm điểm trắc nghiệm (Tạm thời 3 câu mẫu)
-    const keys = { q1: 'B', q2: 'B', q3: 'D' };
-    let mcqScore = 0;
-    Object.keys(keys).forEach(q => { if (answers[q] === keys[q]) mcqScore += 1; });
-
-    const submission = {
-      ...formData,
-      answers,
-      mcqScore: (mcqScore / Object.keys(keys).length) * 3, // Quy về thang 3
-      status: 'Chưa chấm',
-      createdAt: serverTimestamp()
-    };
-
-    try {
-      await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'exams'), submission);
-      setSubmitted(true);
-    } catch (e) { alert("Lỗi gửi bài! Em kiểm tra mạng nhé."); }
-  };
-
-  if (submitted) return (
-    <div className="bg-white rounded-3xl p-10 text-center shadow-xl border-t-8 border-green-500 animate-in zoom-in duration-300">
-      <div className="bg-green-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-        <CheckCircle2 size={48} className="text-green-600" />
-      </div>
-      <h2 className="text-3xl font-black text-slate-800 mb-2">Nộp bài thành công!</h2>
-      <p className="text-slate-500 mb-8 italic">Kết quả của em đã được lưu an toàn trên hệ thống của cô.</p>
-      <button onClick={() => location.reload()} className="bg-slate-800 text-white px-8 py-3 rounded-2xl font-bold">LÀM LẠI BÀI</button>
-    </div>
-  );
-
-  return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <header className="text-center mb-10">
-        <h2 className="text-3xl font-black text-blue-700 uppercase tracking-tight">Kiểm Tra Học Kỳ I</h2>
-        <div className="mt-4 inline-flex items-center gap-3 bg-red-100 text-red-600 px-6 py-2 rounded-full font-black text-xl border-2 border-red-200">
-          <Clock size={24} />
-          <span>{Math.floor(timeLeft/60)}:{(timeLeft%60).toString().padStart(2,'0')}</span>
-        </div>
-      </header>
-
-      <div className="bg-white rounded-3xl p-6 shadow-sm border-2 border-slate-100">
-        <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><User size={20}/> THÔNG TIN CỦA EM</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" placeholder="Họ và tên..." value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="border-2 rounded-xl p-3 outline-none focus:border-blue-500 transition" />
-          <input type="text" placeholder="Lớp (Ví dụ: 4B)..." value={formData.class} onChange={e => setFormData({...formData, class: e.target.value})} className="border-2 rounded-xl p-3 outline-none focus:border-blue-500 transition" />
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <QuestionBox num={1} text="Giá trị của chữ số 8 trong số 28 471 539 là:" options={['80 000', '8 000 000', '80 000 000', '800 000']} value={answers.q1} onChange={v => setAnswers({...answers, q1: v})} />
-        <QuestionBox num={2} text="Tổng là 100, hiệu là 20. Số lớn là:" options={['40', '60', '120', '80']} value={answers.q2} onChange={v => setAnswers({...answers, q2: v})} />
-        <QuestionBox num={3} text="48 tháng = ...... năm. Số cần điền là:" options={['1', '2', '3', '4']} value={answers.q3} onChange={v => setAnswers({...answers, q3: v})} />
-        
-        <div className="bg-white p-6 rounded-3xl border-l-8 border-emerald-500 shadow-sm">
-          <p className="font-bold text-lg mb-2 text-emerald-700 uppercase">Phần Tự Luận (7 điểm)</p>
-          <p className="text-sm text-slate-500 mb-4 italic">Bài toán: Đám đất HCN có nửa chu vi 180m, chiều rộng kém chiều dài 24m. Tính diện tích?</p>
-          <textarea 
-            value={formData.essay} 
-            onChange={e => setFormData({...formData, essay: e.target.value})}
-            className="w-full p-4 border-2 rounded-2xl h-48 focus:border-emerald-500 outline-none transition" 
-            placeholder="Em trình bày bài giải ở đây..."
-          />
-        </div>
-      </div>
-
-      <button onClick={handleSubmit} className="w-full bg-blue-600 text-white font-black py-5 rounded-3xl text-2xl shadow-xl hover:scale-[1.02] transition active:scale-95">🚀 NỘP BÀI THI</button>
-    </div>
-  );
-}
-
-function QuestionBox({ num, text, options, value, onChange }) {
-  const optLabels = ['A', 'B', 'C', 'D'];
-  return (
-    <div className="bg-white p-6 rounded-3xl border-l-8 border-blue-500 shadow-sm">
-      <p className="font-bold text-slate-800 text-lg mb-4">Câu {num}. {text}</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {options.map((opt, idx) => (
-          <label key={idx} className={`flex items-center gap-3 p-4 border-2 rounded-2xl cursor-pointer transition-all ${value === optLabels[idx] ? 'bg-blue-50 border-blue-500 ring-4 ring-blue-100' : 'hover:bg-slate-50 border-slate-100'}`}>
-            <input type="radio" className="hidden" name={`q${num}`} value={optLabels[idx]} checked={value === optLabels[idx]} onChange={e => onChange(e.target.value)} />
-            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${value === optLabels[idx] ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>{optLabels[idx]}</span>
-            <span className={value === optLabels[idx] ? 'font-bold text-blue-700' : ''}>{opt}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// 2. GIAO DIỆN TRA CỨU
-function ResultsView({ submissions }) {
-  const [keyword, setKeyword] = useState('');
-  const [found, setFound] = useState(null);
-
-  const handleSearch = () => {
-    const res = submissions.find(s => s.name.toLowerCase() === keyword.toLowerCase());
-    setFound(res || 'none');
-  };
-
-  return (
-    <div className="max-w-md mx-auto py-10 animate-in slide-in-from-bottom duration-500">
-      <div className="bg-white rounded-3xl p-8 shadow-xl border-t-8 border-indigo-500">
-        <h2 className="text-2xl font-black text-indigo-700 text-center mb-6">🔍 TRA CỨU ĐIỂM</h2>
-        <div className="flex gap-2 mb-8">
-          <input type="text" placeholder="Nhập tên em..." value={keyword} onChange={e => setKeyword(e.target.value)} className="flex-grow p-4 border-2 rounded-2xl outline-none focus:border-indigo-500" />
-          <button onClick={handleSearch} className="bg-indigo-600 text-white p-4 rounded-2xl"><Search/></button>
-        </div>
-
-        {found === 'none' && <p className="text-center text-red-500 font-bold">❌ Không tìm thấy bài làm của em.</p>}
-        
-        {found && found !== 'none' && (
-          <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
-            <h3 className="text-xl font-black text-slate-800 text-center mb-4">{found.name}</h3>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-white p-3 rounded-xl text-center border shadow-sm">
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Trắc nghiệm</p>
-                <p className="text-2xl font-black text-blue-600">{found.mcqScore?.toFixed(1)}/3.0</p>
-              </div>
-              <div className="bg-white p-3 rounded-xl text-center border shadow-sm">
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Tự luận</p>
-                <p className="text-2xl font-black text-emerald-600">{found.essayScore !== undefined ? found.essayScore : '?'}</p>
-              </div>
+            
+            <div class="flex bg-slate-100 p-1 rounded-xl border">
+                <button onclick="switchView('student')" id="tab-student" class="btn-tab active">Học sinh</button>
+                <button onclick="switchView('results')" id="tab-results" class="btn-tab">Tra cứu</button>
+                <button onclick="switchView('admin')" id="tab-admin" class="btn-tab">Giáo viên</button>
             </div>
-            <div className="bg-white p-4 rounded-xl text-sm italic text-slate-500 border">
-              {found.status === 'Đã chấm' ? (found.comment || "Giáo viên không nhận xét.") : "⏳ Cô đang chấm bài, em chờ nhé!"}
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-4 md:p-8">
+
+        <!-- VIEW 1: STUDENT (LÀM BÀI) -->
+        <div id="view-student" class="view-content animate-in fade-in duration-500">
+            <header class="text-center mb-10">
+                <h2 class="text-3xl font-black text-blue-700 uppercase tracking-tight">Kiểm Tra Học Kỳ I</h2>
+                <div id="timer-box" class="mt-4 inline-flex items-center gap-3 bg-red-100 text-red-600 px-8 py-2 rounded-full font-black text-2xl border-2 border-red-200">
+                    <span id="timer-display">40:00</span>
+                </div>
+            </header>
+
+            <div class="quiz-card p-6 mb-8 border-t-8 border-blue-500">
+                <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">👤 THÔNG TIN CỦA EM</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="s-name" placeholder="Họ và tên..." class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none transition">
+                    <input type="text" id="s-class" placeholder="Lớp (Ví dụ: 4B)..." class="w-full border-2 border-slate-100 rounded-xl p-3 focus:border-blue-500 outline-none transition">
+                </div>
             </div>
-          </div>
-        )}
-      </div>
+
+            <form id="quiz-form" class="space-y-8 pb-20">
+                <!-- MCQ -->
+                <div class="bg-blue-600 text-white inline-block px-6 py-2 rounded-t-2xl font-black shadow-md uppercase text-sm">Phần I: Trắc Nghiệm</div>
+                <div class="quiz-card p-6 border-2 border-blue-50 space-y-2">
+                    <div class="q-box">
+                        <p class="font-bold text-slate-800">Câu 1. Giá trị của chữ số 8 trong số 28 471 539 là:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
+                            <label class="option-item"><input type="radio" name="q1" value="A"><span>A. 80 000</span></label>
+                            <label class="option-item"><input type="radio" name="q1" value="B"><span>B. 8 000 000</span></label>
+                            <label class="option-item"><input type="radio" name="q1" value="C"><span>C. 80 000 000</span></label>
+                            <label class="option-item"><input type="radio" name="q1" value="D"><span>D. 800 000</span></label>
+                        </div>
+                    </div>
+                    <div class="q-box">
+                        <p class="font-bold text-slate-800">Câu 2. Tổng là 100, hiệu là 20. Số lớn là:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
+                            <label class="option-item"><input type="radio" name="q2" value="A"><span>A. 40</span></label>
+                            <label class="option-item"><input type="radio" name="q2" value="B"><span>B. 60</span></label>
+                        </div>
+                    </div>
+                    <div class="q-box">
+                        <p class="font-bold text-slate-800">Câu 6. Trung bình cộng của 999 và 9999 là:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
+                            <label class="option-item"><input type="radio" name="q6" value="A"><span>A. 5499</span></label>
+                            <label class="option-item"><input type="radio" name="q6" value="B"><span>B. 5473</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Essay -->
+                <div class="bg-emerald-600 text-white inline-block px-6 py-2 rounded-t-2xl font-black shadow-md uppercase text-sm">Phần II: Tự Luận</div>
+                <div class="quiz-card p-6 border-2 border-emerald-50">
+                    <div class="q-box" style="border-left-color: #10b981;">
+                        <p class="font-bold text-slate-800">Câu 9. Bài toán HCN có nửa chu vi 180m, hiệu dài-rộng là 24m. Tính diện tích:</p>
+                        <textarea id="s-essay" class="w-full mt-4 p-4 border-2 rounded-2xl h-48 focus:border-emerald-500 outline-none transition" placeholder="Em trình bày lời giải chi tiết của em vào đây..."></textarea>
+                    </div>
+                </div>
+
+                <button type="button" onclick="submitExam()" id="submit-btn" class="w-full bg-blue-600 text-white font-black py-5 rounded-3xl text-2xl shadow-xl hover:scale-[1.02] transition active:scale-95">🚀 NỘP BÀI THI</button>
+            </form>
+        </div>
+
+        <!-- VIEW 2: RESULTS (TRA CỨU) -->
+        <div id="view-results" class="view-content hidden py-10 animate-in slide-in-from-bottom duration-500">
+            <div class="max-w-md mx-auto">
+                <div class="quiz-card p-8 border-t-8 border-indigo-500">
+                    <h2 class="text-2xl font-black text-indigo-700 text-center mb-6 uppercase">Tra cứu kết quả</h2>
+                    <div class="flex gap-2 mb-8">
+                        <input type="text" id="search-name" placeholder="Nhập tên em..." class="flex-grow p-4 border-2 rounded-2xl outline-none focus:border-indigo-500">
+                        <button onclick="searchMyScore()" class="bg-indigo-600 text-white p-4 rounded-2xl">🔍</button>
+                    </div>
+                    <div id="search-output" class="hidden space-y-4">
+                        <div class="bg-slate-50 p-6 rounded-2xl border text-center">
+                            <h3 id="res-name" class="text-xl font-bold mb-4">...</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white p-3 rounded-xl border shadow-sm">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Trắc nghiệm</p>
+                                    <p id="res-mcq" class="text-2xl font-black text-blue-600">0/3.0</p>
+                                </div>
+                                <div class="bg-white p-3 rounded-xl border shadow-sm">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Tự luận</p>
+                                    <p id="res-essay" class="text-2xl font-black text-emerald-600">?</p>
+                                </div>
+                            </div>
+                            <div id="res-comment" class="mt-4 bg-white p-4 rounded-xl text-sm italic text-slate-500 border">...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 3: ADMIN (GIÁO VIÊN) -->
+        <div id="view-admin" class="view-content hidden animate-in fade-in duration-500">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight">Danh sách bài nộp</h2>
+                <div class="text-xs font-bold text-emerald-500 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100">● Live Connection</div>
+            </div>
+            
+            <div class="quiz-card overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b text-xs font-black text-slate-500 uppercase tracking-widest">
+                        <tr>
+                            <th class="p-4">Học sinh</th>
+                            <th class="p-4">Lớp</th>
+                            <th class="p-4">Điểm TN</th>
+                            <th class="p-4">Trạng thái</th>
+                            <th class="p-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table" class="divide-y divide-slate-100">
+                        <!-- JS injected -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal chấm điểm -->
+    <div id="grading-modal" class="fixed inset-0 bg-slate-900/60 hidden z-[100] items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+            <div class="bg-slate-800 p-6 text-white flex justify-between items-center">
+                <h3 id="grade-title" class="text-xl font-bold">Chấm bài</h3>
+                <button onclick="closeGradeModal()" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div class="p-8">
+                <p class="text-xs font-bold text-slate-400 uppercase mb-2">Bài làm tự luận:</p>
+                <div id="grade-content" class="bg-slate-50 p-4 rounded-2xl border text-sm italic mb-6 max-h-40 overflow-y-auto"></div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase">Điểm (0-7):</label>
+                        <input type="number" id="grade-value" step="0.25" class="w-full p-4 bg-blue-50 border-2 rounded-2xl font-black text-blue-700 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase">Lời phê:</label>
+                        <input type="text" id="grade-comment" class="w-full p-4 border-2 rounded-2xl outline-none" placeholder="Làm bài tốt...">
+                    </div>
+                </div>
+                <button onclick="saveFinalGrade()" id="btn-save" class="w-full mt-8 bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg hover:bg-blue-700 transition">💾 LƯU ĐIỂM VÀ PHẢN HỒI</button>
+            </div>
+        </div>
     </div>
-  );
-}
 
-// 3. GIAO DIỆN GIÁO VIÊN
-function AdminView({ submissions, loading }) {
-  const [grading, setGrading] = useState(null);
+    <!-- Firebase SDK (Version 11.6.1) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, serverTimestamp, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-  const handleSaveGrade = async (grade, comment) => {
-    try {
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'exams', grading.id);
-      await updateDoc(docRef, { essayScore: parseFloat(grade), comment, status: 'Đã chấm' });
-      setGrading(null);
-      alert("Đã lưu điểm thành công!");
-    } catch (e) { alert("Lỗi lưu điểm!"); }
-  };
+        // Khởi tạo Firebase
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'toan-4-hk1-online';
 
-  return (
-    <div className="animate-in fade-in duration-500">
-      <header className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Sổ Điểm Điện Tử</h2>
-        <div className="text-xs font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full animate-pulse">● Đang kết nối Live</div>
-      </header>
+        let user = null;
+        let activeGradingId = null;
 
-      {loading ? (
-        <div className="text-center py-20">Đang tải dữ liệu bài làm...</div>
-      ) : (
-        <div className="bg-white rounded-3xl shadow-lg border overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 border-b text-xs font-black text-slate-500 uppercase tracking-widest">
-              <tr>
-                <th className="p-4">Học sinh</th>
-                <th className="p-4">Lớp</th>
-                <th className="p-4">Điểm TN</th>
-                <th className="p-4">Tự luận</th>
-                <th className="p-4">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {submissions.map(s => (
-                <tr key={s.id} className="hover:bg-slate-50 transition">
-                  <td className="p-4 font-bold text-slate-700">{s.name}</td>
-                  <td className="p-4 text-slate-500">{s.class}</td>
-                  <td className="p-4 font-black text-blue-600">{s.mcqScore?.toFixed(1)}</td>
-                  <td className="p-4">
-                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${s.status === 'Đã chấm' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                      {s.status === 'Đã chấm' ? `${s.essayScore}/7.0` : 'Chưa chấm'}
-                    </span>
-                  </td>
-                  <td className="p-4"><button onClick={() => setGrading(s)} className="bg-slate-800 text-white text-xs px-4 py-2 rounded-xl font-bold">Chấm bài</button></td>
+        // Xác thực
+        const initAuth = async () => {
+            await signInAnonymously(auth);
+            onAuthStateChanged(auth, (u) => { user = u; if(u) listenForData(); });
+        };
+        initAuth();
+
+        // Chuyển view
+        window.switchView = (view) => {
+            document.querySelectorAll('.view-content').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-' + view).classList.remove('hidden');
+            
+            document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + view).classList.add('active');
+        };
+
+        // Timer
+        let timeLeft = 40 * 60;
+        setInterval(() => {
+            if(document.getElementById('view-student').classList.contains('hidden')) return;
+            timeLeft--;
+            const m = Math.floor(timeLeft/60);
+            const s = timeLeft%60;
+            document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            if(timeLeft <= 0) { alert("Hết giờ!"); submitExam(); }
+        }, 1000);
+
+        // NỘP BÀI
+        window.submitExam = async () => {
+            const name = document.getElementById('s-name').value.trim();
+            const cls = document.getElementById('s-class').value.trim();
+            if(!name || !cls) return alert("Vui lòng nhập tên và lớp!");
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true; btn.innerText = "🌀 ĐANG GỬI BÀI...";
+
+            const form = document.getElementById('quiz-form');
+            const fd = new FormData(form);
+            const keys = { q1: 'B', q2: 'B', q6: 'A' };
+            let mcq = 0;
+            for(let k in keys) if(fd.get(k) === keys[k]) mcq += 1;
+
+            const sub = {
+                name, class: cls,
+                mcqScore: (mcq/3)*3, // Ví dụ 3 câu mẫu
+                essay: document.getElementById('s-essay').value,
+                status: 'Chờ chấm',
+                createdAt: serverTimestamp()
+            };
+
+            try {
+                if(!user) await signInAnonymously(auth);
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'submissions'), sub);
+                alert("Nộp bài thành công! Em hãy sang tab TRA CỨU để xem kết quả.");
+                location.reload();
+            } catch(e) { alert("Lỗi gửi bài!"); btn.disabled = false; }
+        };
+
+        // TRA CỨU
+        window.searchMyScore = async () => {
+            const keyword = document.getElementById('search-name').value.trim();
+            if(!keyword) return;
+            
+            const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'submissions'));
+            const res = snap.docs.find(d => d.data().name.toLowerCase() === keyword.toLowerCase());
+
+            const out = document.getElementById('search-output');
+            if(res) {
+                const d = res.data();
+                document.getElementById('res-name').innerText = d.name;
+                document.getElementById('res-mcq').innerText = d.mcqScore?.toFixed(1) + "/3.0";
+                document.getElementById('res-essay').innerText = d.essayScore !== undefined ? d.essayScore + "/7.0" : "?";
+                document.getElementById('res-comment').innerText = d.status === 'Đã chấm' ? (d.comment || "Không có nhận xét.") : "⏳ Cô đang chấm phần tự luận, em chờ nhé!";
+                out.classList.remove('hidden');
+            } else { alert("Không tìm thấy học sinh này."); }
+        };
+
+        // GIÁO VIÊN: Lắng nghe dữ liệu
+        let allSubmissions = [];
+        function listenForData() {
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'submissions'), (snap) => {
+                allSubmissions = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAdminTable();
+            });
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-table');
+            allSubmissions.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            tbody.innerHTML = allSubmissions.map(s => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-4 font-bold text-slate-700">${s.name}</td>
+                    <td class="p-4 text-slate-500">${s.class}</td>
+                    <td class="p-4 font-black text-blue-600">${s.mcqScore?.toFixed(1)}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${s.status === 'Đã chấm' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+                            ${s.status === 'Đã chấm' ? s.essayScore + ' đ' : 'Chưa chấm'}
+                        </span>
+                    </td>
+                    <td class="p-4"><button onclick="openGradeModal('${s.id}')" class="bg-slate-800 text-white text-[10px] px-3 py-1 rounded-lg font-bold">CHẤM BÀI</button></td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {submissions.length === 0 && <div className="p-10 text-center text-slate-400">Chưa có bài làm nào nộp lên hệ thống.</div>}
-        </div>
-      )}
+            `).join('');
+        }
 
-      {grading && <GradeModal data={grading} onClose={() => setGrading(null)} onSave={handleSaveGrade} />}
-    </div>
-  );
-}
+        window.openGradeModal = (id) => {
+            activeGradingId = id;
+            const s = allSubmissions.find(x => x.id === id);
+            document.getElementById('grade-title').innerText = "Chấm bài: " + s.name;
+            document.getElementById('grade-content').innerText = s.essay || "(Học sinh không nộp lời giải)";
+            document.getElementById('grade-value').value = s.essayScore || "";
+            document.getElementById('grade-comment').value = s.comment || "";
+            document.getElementById('grading-modal').style.display = 'flex';
+        };
 
-function GradeModal({ data, onClose, onSave }) {
-  const [grade, setGrade] = useState(data.essayScore || '');
-  const [comment, setComment] = useState(data.comment || '');
+        window.closeGradeModal = () => document.getElementById('grading-modal').style.display = 'none';
 
-  return (
-    <div className="fixed inset-0 bg-slate-900/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-        <div className="bg-slate-800 p-6 text-white flex justify-between items-center">
-          <h3 className="text-xl font-bold">Chấm bài: {data.name}</h3>
-          <button onClick={onClose}><X/></button>
-        </div>
-        <div className="p-8">
-          <label className="text-xs font-bold text-slate-400 uppercase">Bài làm của em:</label>
-          <div className="bg-slate-50 p-4 rounded-2xl border text-sm italic text-slate-600 mb-6 mt-2 max-h-40 overflow-y-auto whitespace-pre-wrap">{data.essay || "(Để trống)"}</div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-xs font-bold text-slate-400 uppercase">Điểm (0 - 7):</label>
-              <input type="number" step="0.25" value={grade} onChange={e => setGrade(e.target.value)} className="w-full p-4 bg-blue-50 border-2 rounded-2xl font-black text-blue-700" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-slate-400 uppercase">Lời nhận xét:</label>
-              <input type="text" value={comment} onChange={e => setComment(e.target.value)} className="w-full p-4 border-2 rounded-2xl" placeholder="Làm bài tốt..." />
-            </div>
-          </div>
-          <button onClick={() => onSave(grade, comment)} className="w-full mt-8 bg-blue-600 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-blue-200"><Save size={20}/> LƯU ĐIỂM VÀ PHẢN HỒI</button>
-        </div>
-      </div>
-    </div>
-  );
-}
+        window.saveFinalGrade = async () => {
+            const val = parseFloat(document.getElementById('grade-value').value);
+            const cmt = document.getElementById('grade-comment').value;
+            if(isNaN(val)) return alert("Hãy nhập điểm!");
+
+            const btn = document.getElementById('btn-save');
+            btn.disabled = true; btn.innerText = "ĐANG LƯU...";
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'submissions', activeGradingId), {
+                    essayScore: val, comment: cmt, status: 'Đã chấm'
+                });
+                closeGradeModal();
+                alert("Đã lưu điểm!");
+            } catch(e) { alert("Lỗi!"); }
+            btn.disabled = false; btn.innerText = "💾 LƯU ĐIỂM VÀ PHẢN HỒI";
+        };
+
+    </script>
+</body>
+</html>
 
